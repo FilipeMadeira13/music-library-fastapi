@@ -7,9 +7,9 @@ class Artist(BaseModel):
     id: int
     name: str
     country: Optional[str] = None
-    formed_in: Optional[int] = None
+    formation_year: Optional[int] = None
 
-    @field_validator('formed_in')
+    @field_validator('formation_year')
     @classmethod
     def check_formed_in(cls, v):
         if v is not None and v > datetime.now().year:

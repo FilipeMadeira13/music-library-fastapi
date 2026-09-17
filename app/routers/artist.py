@@ -1,5 +1,9 @@
-from fastapi import APIRouter
+from typing import Annotated
 
+from fastapi import APIRouter, Depends
+
+from app.database.artist_repository import ArtistRepository
+from app.dependencies.artist_repository import get_artist_repository
 from app.models.artist import Artist
 
 router = APIRouter(
@@ -7,10 +11,5 @@ router = APIRouter(
 )
 
 @router.get('/', response_model=list[Artist])
-async def list_artists():
-    artist_list = [
-        Artist(id=1 ,name='Rush'),
-        Artist(id=2, name='Megadeth')
-    ]
-
-    return artist_list
+async def list_artists(artist_repository: Annotated[ArtistRepository, Depends(get_artist_repository)]):  
+    return await artist_repository.list_artists()
