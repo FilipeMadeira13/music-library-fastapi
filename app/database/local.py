@@ -1,8 +1,9 @@
 from contextlib import contextmanager
 import sqlite3
 
-class LocalDatabase():
-    def __init__(self, file_name='music_library.db'):
+
+class LocalDatabase:
+    def __init__(self, file_name="music_library.db"):
         self.file_name = file_name
         self.start_db()
 
@@ -21,15 +22,13 @@ class LocalDatabase():
     def start_db(self):
         with self.connect() as connection:
             cursor = connection.cursor()
-            cursor.execute(
-                """
+            cursor.execute("""
                     CREATE TABLE IF NOT EXISTS artists (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         name TEXT NOT NULL,
                         country TEXT,
                         formation_year INT
                     )
-                """
-            )
+                """)
 
-        print('Banco de dados inicializado')
+        print("Banco de dados inicializado")
