@@ -10,6 +10,7 @@ app = FastAPI(
 
 app.include_router(artist.router)
 
+
 @app.get("/health", tags=["Health"])
 def health_check() -> dict[str, str]:
     """Verifica se a API está no ar."""
