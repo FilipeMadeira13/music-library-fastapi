@@ -1,7 +1,7 @@
 from datetime import datetime
-from typing import Annotated, Optional
+from typing import Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, field_validator
 
 
 def validate_formation_year(v: Optional[int]) -> Optional[int]:
@@ -15,6 +15,8 @@ class Artist(BaseModel):
     name: str
     country: Optional[str] = None
     formation_year: Optional[int] = None
+    created_at: datetime
+    updated_at: datetime
 
     _validate_formation_year = field_validator("formation_year")(
         validate_formation_year

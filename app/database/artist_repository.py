@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 
 from app.database.local import LocalDatabase
@@ -11,7 +12,9 @@ class ArtistRepository:
     async def list_artists(self) -> list[Artist]:
         with self.db.connect() as connection:
             cursor = connection.cursor()
-            cursor.execute("SELECT id, name, country, formation_year FROM artists")
+            cursor.execute(
+                "SELECT id, name, country, formation_year, created_at, updated_at FROM artists"
+            )
             lines = cursor.fetchall()
             artists = [
                 Artist(
@@ -19,6 +22,8 @@ class ArtistRepository:
                     name=line[1],
                     country=line[2],
                     formation_year=line[3],
+                    created_at=line[4],
+                    updated_at=line[5],
                 )
                 for line in lines
             ]
@@ -33,10 +38,17 @@ class ArtistRepository:
             )
             artist_id = cursor.lastrowid
             if artist_id:
+                cursor.execute(
+                    "SELECT created_at, updated_at FROM artists WHERE id = ?",
+                    (artist_id,),
+                )
+                line = cursor.fetchone()
                 return Artist(
                     id=artist_id,
                     name=artist.name,
                     country=artist.country,
                     formation_year=artist.formation_year,
+                    created_at=line[0],
+                    updated_at=line[1],
                 )
             return None
