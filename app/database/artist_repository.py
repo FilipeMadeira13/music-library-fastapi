@@ -29,6 +29,26 @@ class ArtistRepository:
             ]
             return artists
 
+    async def search_artist(self, artist_id: int) -> Optional[Artist]:
+        with self.db.connect() as connection:
+            cursor = connection.cursor()
+            cursor.execute(
+                "SELECT id, name, country, formation_year, created_at, updated_at FROM artists WHERE id = ?",
+                (artist_id,),
+            )
+            line = cursor.fetchone()
+            if line:
+                return Artist(
+                    id=line[0],
+                    name=line[1],
+                    country=line[2],
+                    formation_year=line[3],
+                    created_at=line[4],
+                    updated_at=line[5],
+                )
+
+            return None
+
     async def register_artist(self, artist: ArtistCreateUpdate) -> Optional[Artist]:
         with self.db.connect() as connection:
             cursor = connection.cursor()
