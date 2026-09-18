@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 
 from app.database.artist_repository import ArtistRepository
 from app.dependencies.artist_repository import get_artist_repository
@@ -16,9 +16,23 @@ async def list_artists(
     return await artist_repository.list_artists()
 
 
+@router.get("/{artist_id}", response_model=Artist, tags=["Artist"])
+async def search_artist(
+    artist_repository: Annotated[ArtistRepository, Depends(get_artist_repository)],
+    artist_id: int,
+):
+    artist = await artist_repository.search_artist(artist_id)
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artista não encontrado!")
+    return artist
+
+
 @router.post("/", response_model=Artist, status_code=201, tags=["Artist"])
 async def register_artist(
     artist_repository: Annotated[ArtistRepository, Depends(get_artist_repository)],
     artist: ArtistCreateUpdate,
 ):
     return await artist_repository.register_artist(artist)
+    if not artista:
+        raise HTTPException(status_code=404, detail="Artista não encontrado!")
+    return artista
