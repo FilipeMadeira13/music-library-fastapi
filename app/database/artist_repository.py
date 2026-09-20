@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from app.database.local import LocalDatabase
@@ -72,3 +72,40 @@ class ArtistRepository:
                     updated_at=line[1],
                 )
             return None
+
+    async def update_artist(
+        self, artist_id: int, artist: ArtistCreateUpdate
+    ) -> Optional[Artist]:
+        with self.db.connect() as connection:
+            cursor = connection.cursor()
+            cursor.execute(
+                "UPDATE artists SET name = ?, country = ?, formation_year = ?, updated_at = ? WHERE id = ?",
+                (
+                    artist.name,
+                    artist.country,
+                    artist.formation_year,
+                    datetime.now(timezone.utc),
+                    artist_id,
+                ),
+            )
+            if cursor.rowcount == 0:
+                return None
+            cursor.execute(
+                "SELECT created_at, updated_at FROM artists WHERE id = ?",
+                (artist_id,),
+            )
+            line = cursor.fetchone()
+            return Artist(
+                id=artist_id,
+                name=artist.name,
+                country=artist.country,
+                formation_year=artist.formation_year,
+                created_at=line[0],
+                updated_at=line[1],
+            )
+
+    async def delete_artist(self, artist_id: int) -> bool:
+        with self.db.connect() as connection:
+            cursor = connection.cursor()
+            cursor.execute("DELETE FROM artists WHERE id = ?", (artist_id,))
+            return cursor.rowcount > 0
