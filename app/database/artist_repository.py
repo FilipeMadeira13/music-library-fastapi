@@ -103,3 +103,9 @@ class ArtistRepository:
                 created_at=line[0],
                 updated_at=line[1],
             )
+
+    async def delete_artist(self, artist_id: int) -> bool:
+        with self.db.connect() as connection:
+            cursor = connection.cursor()
+            cursor.execute("DELETE FROM artists WHERE id = ?", (artist_id,))
+            return cursor.rowcount > 0

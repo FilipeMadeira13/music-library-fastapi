@@ -50,3 +50,13 @@ async def update_artist(
     if not updated_artist:
         raise HTTPException(status_code=404, detail="Artista não encontrado!")
     return updated_artist
+
+
+@router.delete("/{artist_id}", status_code=204)
+async def delete_artist(
+    artist_repository: Annotated[ArtistRepository, Depends(get_artist_repository)],
+    artist_id: int,
+):
+    success = await artist_repository.delete_artist(artist_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Artista não encontrado!")
