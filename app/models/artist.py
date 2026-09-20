@@ -3,11 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel, field_validator
 
-
-def validate_formation_year(v: Optional[int]) -> Optional[int]:
-    if v is not None and v > datetime.now().year:
-        raise ValueError("O ano de formação não pode ser no futuro")
-    return v
+from app.utils.validate_year import validate_year
 
 
 class Artist(BaseModel):
@@ -18,8 +14,8 @@ class Artist(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    _validate_formation_year = field_validator("formation_year")(
-        validate_formation_year
+    validate_formation_year = field_validator("formation_year")(
+        validate_year
     )
 
 
@@ -28,6 +24,6 @@ class ArtistCreateUpdate(BaseModel):
     country: Optional[str] = None
     formation_year: Optional[int] = None
 
-    _validate_formation_year = field_validator("formation_year")(
-        validate_formation_year
+    validate_formation_year = field_validator("formation_year")(
+        validate_year
     )
