@@ -14,9 +14,7 @@ class Artist(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    validate_formation_year = field_validator("formation_year")(
-        validate_year
-    )
+    validate_formation_year = field_validator("formation_year")(validate_year)
 
 
 class ArtistCreateUpdate(BaseModel):
@@ -24,6 +22,4 @@ class ArtistCreateUpdate(BaseModel):
     country: Optional[str] = None
     formation_year: Optional[int] = None
 
-    validate_formation_year = field_validator("formation_year")(
-        validate_year
-    )
+    validate_formation_year = field_validator("formation_year")(validate_year)
