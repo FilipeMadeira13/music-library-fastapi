@@ -33,12 +33,9 @@ async def register_artist(
     artist: ArtistCreateUpdate,
 ):
     return await artist_repository.register_artist(artist)
-    if not artista:
-        raise HTTPException(status_code=404, detail="Artista não encontrado!")
-    return artista
 
 
-@router.put("/{artist_id}", response_model=Optional[Artist])
+@router.put("/{artist_id}", response_model=Optional[Artist], tags=["Artist"])
 async def update_artist(
     artist_repository: Annotated[ArtistRepository, Depends(get_artist_repository)],
     artist_id: int,
@@ -52,7 +49,7 @@ async def update_artist(
     return updated_artist
 
 
-@router.delete("/{artist_id}", status_code=204)
+@router.delete("/{artist_id}", status_code=204, tags=["Artist"])
 async def delete_artist(
     artist_repository: Annotated[ArtistRepository, Depends(get_artist_repository)],
     artist_id: int,

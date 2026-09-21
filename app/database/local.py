@@ -27,10 +27,23 @@ class LocalDatabase:
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         name TEXT NOT NULL,
                         country TEXT,
-                        formation_year INT,
+                        formation_year INTEGER,
                         created_at TEXT DEFAULT CURRENT_TIMESTAMP,
                         updated_at TEXT DEFAULT CURRENT_TIMESTAMP
                     )
                 """)
+            cursor.execute("""
+            CREATE TABLE IF NOT EXISTS albums (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT NOT NULL,
+                artist_id INTEGER NOT NULL,
+                release_year INTEGER,
+                genre TEXT,
+                number_of_tracks INTEGER,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (artist_id) REFERENCES artists(id)
+            )
+        """)
 
         print("Banco de dados inicializado")

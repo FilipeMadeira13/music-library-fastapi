@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from app.routers import artist
+from app.routers import album, artist
 
 app = FastAPI(
     title="Music Library",
@@ -9,6 +9,7 @@ app = FastAPI(
 )
 
 app.include_router(artist.router)
+app.include_router(album.router)
 
 
 @app.get("/health", tags=["Health"])
