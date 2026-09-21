@@ -18,6 +18,7 @@ class Album(BaseModel):
 
     validate_release_year = field_validator("release_year")(validate_year)
 
+
 class AlbumCreateUpdate(BaseModel):
     title: str
     artist_id: int

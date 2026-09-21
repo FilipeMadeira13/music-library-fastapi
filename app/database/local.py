@@ -32,8 +32,7 @@ class LocalDatabase:
                         updated_at TEXT DEFAULT CURRENT_TIMESTAMP
                     )
                 """)
-            cursor.execute(
-        """
+            cursor.execute("""
             CREATE TABLE IF NOT EXISTS albums (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 title TEXT NOT NULL,
@@ -45,7 +44,6 @@ class LocalDatabase:
                 updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (artist_id) REFERENCES artists(id)
             )
-        """
-            )
+        """)
 
         print("Banco de dados inicializado")
