@@ -8,6 +8,28 @@ class AlbumRepository:
     def __init__(self, database: LocalDatabase):
         self.db = database
 
+    async def list_albums(self):
+        with self.db.connect() as connection:
+            cursor = connection.cursor()
+            cursor.execute(
+                "SELECT id, title, artist_id, release_year, genre, number_of_tracks, created_at, updated_at FROM albums"
+            )
+            lines = cursor.fetchall()
+            albums = [
+                Album(
+                    id=line[0],
+                    title=line[1],
+                    artist_id=line[2],
+                    release_year=line[3],
+                    genre=line[4],
+                    number_of_tracks=line[5],
+                    created_at=line[6],
+                    updated_at=line[7],
+                )
+                for line in lines
+            ]
+            return albums
+
     async def register_album(self, album: AlbumCreateUpdate) -> Optional[Album]:
         with self.db.connect() as connection:
             cursor = connection.cursor()

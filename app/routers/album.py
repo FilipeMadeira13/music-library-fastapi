@@ -11,6 +11,13 @@ from app.models.album import Album, AlbumCreateUpdate
 router = APIRouter(prefix="/api/albums")
 
 
+@router.get("/", response_model=list[Album], tags=["Album"])
+async def list_albums(
+    album_repository: Annotated[AlbumRepository, Depends(get_album_repository)],
+):
+    return await album_repository.list_albums()
+
+
 @router.post("/", response_model=Album, status_code=201, tags=["Album"])
 async def register_album(
     album_repository: Annotated[AlbumRepository, Depends(get_album_repository)],
