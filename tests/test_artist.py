@@ -47,8 +47,16 @@ def test_database_starts_empty(database):
     assert rows == []
 
 
-def test_api_rejects_missing_name(client, database):
-    response = client.post("/api/artists/", json={})
+@pytest.mark.parametrize(
+    "payload",
+    [
+        {},
+        {"name": ""},
+        {"name": " "},
+    ],
+)
+def test_api_rejects_ivalid_name(client, database, payload):
+    response = client.post("/api/artists/", json=payload)
     with database.connect() as connection:
         rows = connection.execute("SELECT * FROM artists").fetchall()
 
@@ -63,21 +71,3 @@ def test_api_accepts_valid_name(client, database):
 
     assert response.status_code == 201
     assert rows == [("Rush",)]
-
-
-def test_api_rejects_empty_name(client, database):
-    response = client.post("/api/artists/", json={"name": ""})
-    with database.connect() as connection:
-        rows = connection.execute("SELECT * FROM artists").fetchall()
-
-    assert response.status_code == 422
-    assert rows == []
-
-
-def test_api_rejects_whitespace_name(client, database):
-    response = client.post("/api/artists/", json={"name": " "})
-    with database.connect() as connection:
-        rows = connection.execute("SELECT * FROM artists").fetchall()
-
-    assert response.status_code == 422
-    assert rows == []
