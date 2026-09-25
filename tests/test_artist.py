@@ -54,3 +54,12 @@ def test_api_rejects_missing_name(client, database):
 
     assert response.status_code == 422
     assert rows == []
+
+
+def test_api_accepts_valid_name(client, database):
+    response = client.post("/api/artists/", json={"name": "Rush"})
+    with database.connect() as connection:
+        rows = connection.execute("SELECT name FROM artists").fetchall()
+
+    assert response.status_code == 201
+    assert rows == [("Rush",)]
