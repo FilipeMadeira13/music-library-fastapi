@@ -45,3 +45,12 @@ def test_database_starts_empty(database):
         rows = connection.execute("SELECT * FROM artists").fetchall()
 
     assert rows == []
+
+
+def test_api_rejects_missing_name(client, database):
+    response = client.post("/api/artists/", json={})
+    with database.connect() as connection:
+        rows = connection.execute("SELECT * FROM artists").fetchall()
+
+    assert response.status_code == 422
+    assert rows == []

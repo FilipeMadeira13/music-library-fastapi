@@ -10,11 +10,11 @@ def database(tmp_path):
 
 
 @pytest.fixture
-def client(tmp_path, monkeypatch):
+def client(database, tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
 
-    from app.main import app
     from app.dependencies.main import get_database
+    from app.main import app
 
     def get_test_database():
         return database
