@@ -53,15 +53,22 @@ def test_database_starts_empty(database):
         {},
         {"name": ""},
         {"name": " "},
+        {"name": None},
+        {"name": "\t\n"},
     ],
 )
-def test_api_rejects_ivalid_name(client, database, payload):
+def test_api_rejects_invalid_name(client, database, payload):
     response = client.post("/api/artists/", json=payload)
     with database.connect() as connection:
         rows = connection.execute("SELECT * FROM artists").fetchall()
 
     assert response.status_code == 422
+
+    errors = response.json()["detail"]
+
     assert rows == []
+    assert len(errors) == 1
+    assert errors[0]["loc"] == ["body", "name"]
 
 
 def test_api_accepts_valid_name(client, database):
