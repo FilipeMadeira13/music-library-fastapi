@@ -78,3 +78,46 @@ def test_api_accepts_valid_name(client, database):
 
     assert response.status_code == 201
     assert rows == [("Rush",)]
+
+
+def test_api_lists_all_artists_with_basic_data(client, database):
+    expected = [
+        {
+            "id": 10,
+            "name": "Rush",
+            "country": "Canada",
+            "formation_year": 1968,
+        },
+        {
+            "id": 20,
+            "name": "Queen",
+            "country": "United Kingdom",
+            "formation_year": 1970,
+        },
+        {
+            "id": 30,
+            "name": "Artista independente",
+            "country": None,
+            "formation_year": None,
+        },
+    ]
+
+    with database.connect() as connection:
+        connection.executemany(
+            """
+            INSERT INTO artists (id, name, country, formation_year)
+            VALUES (:id, :name, :country, :formation_year)
+            """,
+            expected,
+        )
+
+    response = client.get("/api/artists/")
+
+    assert response.status_code == 200
+
+    artists = response.json()
+    assert isinstance(artists, list)
+    assert len(artists) == len(expected)
+
+    basic_data = [{field: artist[field] for field in expected[0]} for artist in artists]
+    assert sorted(basic_data, key=lambda artist: artist["id"]) == expected
