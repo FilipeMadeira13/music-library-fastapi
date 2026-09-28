@@ -192,3 +192,4 @@ pyrightconfig.json
 
 .pytest-tmp-local/
 .pytest-tmp-review/
+.pytest-tmp/
