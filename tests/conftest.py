@@ -27,3 +27,67 @@ def client(database, tmp_path, monkeypatch):
 
     with TestClient(app) as test_client:
         yield test_client
+
+
+def seed_artist(
+    database,
+    *,
+    artist_id=None,
+    name="Rush",
+    country=None,
+    formation_year=None,
+):
+    with database.connect() as connection:
+        if artist_id is None:
+            cursor = connection.execute(
+                """
+                INSERT INTO artists (name, country, formation_year)
+                VALUES (?, ?, ?)
+                """,
+                (name, country, formation_year),
+            )
+            return cursor.lastrowid
+
+        connection.execute(
+            """
+            INSERT INTO artists (id, name, country, formation_year)
+            VALUES (?, ?, ?, ?)
+            """,
+            (artist_id, name, country, formation_year),
+        )
+        return artist_id
+
+
+def seed_album(
+    database,
+    *,
+    album_id=None,
+    title="2112",
+    artist_id,
+    release_year=None,
+    genre=None,
+    number_of_tracks=None,
+):
+    with database.connect() as connection:
+        if album_id is None:
+            cursor = connection.execute(
+                """
+                INSERT INTO albums (
+                    title, artist_id, release_year, genre, number_of_tracks
+                )
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                (title, artist_id, release_year, genre, number_of_tracks),
+            )
+            return cursor.lastrowid
+
+        connection.execute(
+            """
+            INSERT INTO albums (
+                id, title, artist_id, release_year, genre, number_of_tracks
+            )
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (album_id, title, artist_id, release_year, genre, number_of_tracks),
+        )
+        return album_id
