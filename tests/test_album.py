@@ -99,7 +99,7 @@ def test_api_creates_album_for_existing_artist(client, database):
     assert rows == [("2112", artist_id, 1976, "Progressive rock", 6)]
 
 
-def test_api_returns_404_when_creating_album_for_missing_artist(client, database):
+def test_api_returns_422_when_creating_album_for_missing_artist(client, database):
     payload = {
         "title": "2112",
         "artist_id": 999,
@@ -112,8 +112,8 @@ def test_api_returns_404_when_creating_album_for_missing_artist(client, database
     with database.connect() as connection:
         rows = connection.execute("SELECT * FROM albums").fetchall()
 
-    assert response.status_code == 404
-    assert response.json() == {"detail": "Artista não encontrado!"}
+    assert response.status_code == 422
+    assert response.json() == {"detail": "O artista informado não existe."}
     assert rows == []
 
 
@@ -139,28 +139,37 @@ def test_api_rejects_invalid_album_payload(client, database, payload):
     assert rows == []
 
 
-def test_create_model_accepts_future_release_year():
+def test_create_model_rejects_future_release_year():
     future_year = datetime.now().year + 1
-    album = AlbumCreateUpdate.model_validate(
-        {
-            "title": "Unreleased",
-            "artist_id": 1,
-            "release_year": future_year,
-        }
-    )
-    assert album.release_year == future_year
+    with pytest.raises(ValidationError) as exc_info:
+        AlbumCreateUpdate.model_validate(
+            {
+                "title": "Unreleased",
+                "artist_id": 1,
+                "release_year": future_year,
+            }
+        )
+
+    assert exc_info.value.errors()[0]["loc"] == ("release_year",)
 
 
-def test_registering_album_with_future_year_fails_on_response_model(client, database):
+def test_api_rejects_future_release_year_without_saving_album(client, database):
     artist_id = seed_artist(database, name="Rush")
     future_year = datetime.now().year + 1
 
-    with pytest.raises(ValidationError):
-        client.post(
-            "/api/albums/",
-            json={
-                "title": "Unreleased",
-                "artist_id": artist_id,
-                "release_year": future_year,
-            },
-        )
+    response = client.post(
+        "/api/albums/",
+        json={
+            "title": "Unreleased",
+            "artist_id": artist_id,
+            "release_year": future_year,
+        },
+    )
+
+    assert response.status_code == 422
+    assert response.json()["detail"][0]["loc"] == ["body", "release_year"]
+
+    with database.connect() as connection:
+        rows = connection.execute("SELECT * FROM albums").fetchall()
+
+    assert rows == []
