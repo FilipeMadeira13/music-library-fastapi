@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+import sqlite3
 from typing import Optional
 
 from app.database.local import LocalDatabase
@@ -106,12 +107,11 @@ class ArtistRepository:
             )
 
     async def delete_artist(self, artist_id: int) -> Optional[bool]:
-        with self.db.connect() as connection:
-            cursor = connection.cursor()
-            cursor.execute("SELECT id FROM albums WHERE artist_id = ?", (artist_id,))
-
-            if cursor.fetchone() is not None:
-                raise ArtistHasAlbumsError(artist_id)
-
-            cursor.execute("DELETE FROM artists WHERE id = ?", (artist_id,))
-            return cursor.rowcount > 0
+        try:
+            with self.db.connect() as connection:
+                cursor = connection.cursor()
+                cursor.execute("DELETE FROM artists WHERE id = ?", (artist_id,))
+                return cursor.rowcount > 0
+        except sqlite3.IntegrityError as exc:
+            if exc.sqlite_errorcode == sqlite3.SQLITE_CONSTRAINT_FOREIGNKEY:
+                raise ArtistHasAlbumsError(artist_id) from exc
