@@ -8,7 +8,7 @@ from tests.conftest import seed_album, seed_artist
 
 
 def test_api_lists_empty_albums(client):
-    response = client.get("/api/albums/") 
+    response = client.get("/api/albums/")
 
     assert response.status_code == 200
     assert response.json() == []
@@ -91,12 +91,10 @@ def test_api_creates_album_for_existing_artist(client, database):
     assert body["updated_at"]
 
     with database.connect() as connection:
-        rows = connection.execute(
-            """
+        rows = connection.execute("""
             SELECT title, artist_id, release_year, genre, number_of_tracks
             FROM albums
-            """
-        ).fetchall()
+            """).fetchall()
 
     assert rows == [("2112", artist_id, 1976, "Progressive rock", 6)]
 
@@ -153,9 +151,7 @@ def test_create_model_accepts_future_release_year():
     assert album.release_year == future_year
 
 
-def test_registering_album_with_future_year_fails_on_response_model(
-    client, database
-):
+def test_registering_album_with_future_year_fails_on_response_model(client, database):
     artist_id = seed_artist(database, name="Rush")
     future_year = datetime.now().year + 1
 

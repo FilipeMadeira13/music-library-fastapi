@@ -25,13 +25,13 @@ def test_database_file_lives_in_tmp_path(database, tmp_path):
     assert Path(database.file_name).name == "test_music_library.db"
 
 
-def test_deleting_artist_does_not_remove_albums(client, database):
+def test_deleting_artist_with_albums_block_operations(client, database):
     artist_id = seed_artist(database, name="Rush")
     seed_album(database, title="2112", artist_id=artist_id)
 
     response = client.delete(f"/api/artists/{artist_id}")
 
-    assert response.status_code == 204
+    assert response.status_code == 409
     with database.connect() as connection:
         albums = connection.execute("SELECT title, artist_id FROM albums").fetchall()
 

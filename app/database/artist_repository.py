@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from typing import Optional
 
 from app.database.local import LocalDatabase
+from app.exceptions import ArtistHasAlbumsError
 from app.models.artist import Artist, ArtistCreateUpdate
 
 
@@ -104,8 +105,13 @@ class ArtistRepository:
                 updated_at=line[1],
             )
 
-    async def delete_artist(self, artist_id: int) -> bool:
+    async def delete_artist(self, artist_id: int) -> Optional[bool]:
         with self.db.connect() as connection:
             cursor = connection.cursor()
+            cursor.execute("SELECT id FROM albums WHERE artist_id = ?", (artist_id,))
+
+            if cursor.fetchone() is not None:
+                raise ArtistHasAlbumsError(artist_id)
+
             cursor.execute("DELETE FROM artists WHERE id = ?", (artist_id,))
             return cursor.rowcount > 0

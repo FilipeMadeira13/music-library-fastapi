@@ -26,9 +26,7 @@ def test_rejects_future_year():
 
 
 def test_model_accepts_valid_formation_year():
-    artist = ArtistCreateUpdate.model_validate(
-        {"name": "Rush", "formation_year": 1968}
-    )
+    artist = ArtistCreateUpdate.model_validate({"name": "Rush", "formation_year": 1968})
     assert artist.formation_year == 1968
 
 
