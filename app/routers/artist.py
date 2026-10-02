@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from app.database.artist_repository import ArtistRepository
 from app.dependencies.artist_repository import get_artist_repository
+from app.exceptions import ArtistHasAlbumsError
 from app.models.artist import Artist, ArtistCreateUpdate
 
 router = APIRouter(prefix="/api/artists")
@@ -54,6 +55,15 @@ async def delete_artist(
     artist_repository: Annotated[ArtistRepository, Depends(get_artist_repository)],
     artist_id: int,
 ):
-    success = await artist_repository.delete_artist(artist_id)
+    try:
+        success = await artist_repository.delete_artist(artist_id)
+    except ArtistHasAlbumsError as exc:
+        raise HTTPException(
+            status_code=409,
+            detail="Este artista possui álbuns vinculados.",
+        ) from exc
     if not success:
-        raise HTTPException(status_code=404, detail="Artista não encontrado!")
+        raise HTTPException(
+            status_code=404,
+            detail="Artista não encontrado!",
+        )

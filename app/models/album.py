@@ -25,3 +25,5 @@ class AlbumCreateUpdate(BaseModel):
     release_year: Optional[int] = None
     genre: Optional[str] = None
     number_of_tracks: Optional[int] = Field(default=None, gt=0)
+
+    validate_release_year = field_validator("release_year")(validate_year)

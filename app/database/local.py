@@ -11,6 +11,7 @@ class LocalDatabase:
     def connect(self):
         connection = sqlite3.connect(self.file_name)
         try:
+            connection.execute("PRAGMA foreign_keys = ON")
             yield connection
             connection.commit()
         except Exception as e:
