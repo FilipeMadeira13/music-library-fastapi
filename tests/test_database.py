@@ -1,4 +1,7 @@
 from pathlib import Path
+import sqlite3
+
+import pytest
 
 from tests.conftest import seed_album, seed_artist
 
@@ -36,3 +39,26 @@ def test_deleting_artist_with_albums_block_operations(client, database):
         albums = connection.execute("SELECT title, artist_id FROM albums").fetchall()
 
     assert albums == [("2112", artist_id)]
+
+
+def test_sql_delete_blocks_artist_with_albums(database):
+    artist_id = seed_artist(database, name="Rush")
+    album_id = seed_album(database, title="2112", artist_id=artist_id)
+
+    with pytest.raises(sqlite3.IntegrityError, match="FOREIGN KEY"):
+        with database.connect() as connection:
+            connection.execute(
+                "DELETE FROM artists WHERE id = ?",
+                (artist_id,),
+            )
+
+    with database.connect() as connection:
+        artist = connection.execute(
+            "SELECT id FROM artists WHERE id = ?", (artist_id,)
+        ).fetchone()
+        album = connection.execute(
+            "SELECT artist_id FROM albums WHERE id = ?", (album_id,)
+        ).fetchone()
+
+    assert artist == (artist_id,)
+    assert album == (album_id,)
