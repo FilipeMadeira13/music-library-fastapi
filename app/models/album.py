@@ -10,6 +10,7 @@ class Album(BaseModel):
     id: int
     title: str
     artist_id: int
+    artist_name: Optional[str] = None
     release_year: Optional[int] = None
     genre: Optional[str] = None
     number_of_tracks: Optional[int] = Field(default=None, gt=0)
