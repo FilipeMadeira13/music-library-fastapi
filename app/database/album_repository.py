@@ -1,4 +1,5 @@
 import sqlite3
+from datetime import datetime, timezone
 from typing import Optional
 
 from app.database.local import LocalDatabase
@@ -98,6 +99,57 @@ class AlbumRepository:
                         created_at=line[0],
                         updated_at=line[1],
                     )
+        except sqlite3.IntegrityError as exc:
+            if exc.sqlite_errorcode == sqlite3.SQLITE_CONSTRAINT_FOREIGNKEY:
+                raise AlbumArtistNotFoundError(album.artist_id) from exc
+            raise
+
+    async def update_album(
+        self, album_id: int, album: AlbumCreateUpdate
+    ) -> Optional[Album]:
+        try:
+            with self.db.connect() as connection:
+                cursor = connection.cursor()
+                cursor.execute(
+                    """
+                    UPDATE albums
+                    SET title = ?, artist_id = ?, release_year = ?, genre = ?,
+                        number_of_tracks = ?, updated_at = ?
+                    WHERE id = ?
+                    """,
+                    (
+                        album.title,
+                        album.artist_id,
+                        album.release_year,
+                        album.genre,
+                        album.number_of_tracks,
+                        datetime.now(timezone.utc).isoformat(),
+                        album_id,
+                    ),
+                )
+                if cursor.rowcount == 0:
+                    return None
+                cursor.execute(
+                    """
+                    SELECT ar.name, a.created_at, a.updated_at
+                    FROM albums AS a
+                    JOIN artists AS ar ON ar.id = a.artist_id
+                    WHERE a.id = ?
+                    """,
+                    (album_id,),
+                )
+                line = cursor.fetchone()
+                return Album(
+                    id=album_id,
+                    title=album.title,
+                    artist_id=album.artist_id,
+                    artist_name=line[0],
+                    release_year=album.release_year,
+                    genre=album.genre,
+                    number_of_tracks=album.number_of_tracks,
+                    created_at=line[1],
+                    updated_at=line[2],
+                )
         except sqlite3.IntegrityError as exc:
             if exc.sqlite_errorcode == sqlite3.SQLITE_CONSTRAINT_FOREIGNKEY:
                 raise AlbumArtistNotFoundError(album.artist_id) from exc

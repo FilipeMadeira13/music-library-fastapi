@@ -48,3 +48,23 @@ async def register_album(
             status_code=422,
             detail="The informed artist does not exist.",
         ) from exc
+
+
+@router.put("/{album_id}", response_model=Optional[Album], tags=["Album"])
+async def update_album(
+    album_repository: Annotated[AlbumRepository, Depends(get_album_repository)],
+    album: AlbumCreateUpdate,
+    album_id: int,
+):
+    try:
+        updated_album = await album_repository.update_album(
+            album_id=album_id, album=album
+        )
+    except AlbumArtistNotFoundError as exc:
+        raise HTTPException(
+            status_code=422,
+            detail="The informed artist does not exist.",
+        ) from exc
+    if not updated_album:
+        raise HTTPException(status_code=404, detail="Album not found!")
+    return updated_album

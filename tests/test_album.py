@@ -250,3 +250,74 @@ def test_api_search_album_preserves_null_fields(client, database):
     assert body["release_year"] is None
     assert body["genre"] is None
     assert body["number_of_tracks"] is None
+
+
+def test_api_updates_album_and_artist(client, database):
+    original_artist = seed_artist(database, name="Rush")
+    new_artist = seed_artist(database, name="Queen")
+    album_id = seed_album(database, artist_id=original_artist)
+    before = client.get(f"/api/albums/{album_id}").json()
+    payload = {
+        "title": "A Night at the Opera",
+        "artist_id": new_artist,
+        "release_year": 1975,
+        "genre": "Rock",
+        "number_of_tracks": 12,
+    }
+
+    response = client.put(f"/api/albums/{album_id}", json=payload)
+
+    assert response.status_code == 200
+    body = response.json()
+    assert all(body[key] == value for key, value in payload.items())
+    assert body["artist_name"] == "Queen"
+    assert body["created_at"] == before["created_at"]
+    assert body["updated_at"] != before["updated_at"]
+    assert client.get(f"/api/albums/{album_id}").json() == body
+
+
+def test_api_update_rejects_missing_artist_without_changing_album(client, database):
+    artist_id = seed_artist(database)
+    album_id = seed_album(database, artist_id=artist_id)
+    before = client.get(f"/api/albums/{album_id}").json()
+
+    response = client.put(
+        f"/api/albums/{album_id}",
+        json={"title": "Changed", "artist_id": 999},
+    )
+
+    assert response.status_code == 422
+    assert response.json() == {"detail": "The informed artist does not exist."}
+    assert client.get(f"/api/albums/{album_id}").json() == before
+
+
+def test_api_update_returns_404_for_missing_album(client, database):
+    artist_id = seed_artist(database)
+    response = client.put(
+        "/api/albums/999", json={"title": "Demo", "artist_id": artist_id}
+    )
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Album not found!"}
+
+
+def test_api_update_clears_optional_fields(client, database):
+    artist_id = seed_artist(database)
+    album_id = seed_album(
+        database,
+        artist_id=artist_id,
+        release_year=1976,
+        genre="Rock",
+        number_of_tracks=6,
+    )
+
+    response = client.put(
+        f"/api/albums/{album_id}", json={"title": "Demo", "artist_id": artist_id}
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["release_year"] is None
+    assert body["genre"] is None
+    assert body["number_of_tracks"] is None
+    assert client.get(f"/api/albums/{album_id}").json() == body
