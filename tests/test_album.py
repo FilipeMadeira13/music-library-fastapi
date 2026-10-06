@@ -229,3 +229,10 @@ def test_api_gets_album_by_id(client, database):
     }
     assert body["created_at"]
     assert body["updated_at"]
+
+
+def test_api_returns_404_when_album_not_found(client):
+    response = client.get("/api/albums/999")
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Album not found!"}
