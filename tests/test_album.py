@@ -173,3 +173,29 @@ def test_api_rejects_future_release_year_without_saving_album(client, database):
         rows = connection.execute("SELECT * FROM albums").fetchall()
 
     assert rows == []
+
+
+def test_api_gets_album_by_id(client, database):
+    artist_id = seed_artist(database, name="Rush")
+    album_id = seed_album(
+        database,
+        title="2112",
+        artist_id=artist_id,
+        release_year=1976,
+        genre="Progressive rock",
+        number_of_tracks=6,
+    )
+
+    response = client.get(f"/api/albums/{album_id}")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["id"] == album_id
+    assert body["title"] == "2112"
+    assert body["artist_id"] == artist_id
+    assert body["artist_name"] == "Rush"
+    assert body["release_year"] == 1976
+    assert body["genre"] == "Progressive rock"
+    assert body["number_of_tracks"] == 6
+    assert body["created_at"]
+    assert body["updated_at"]
