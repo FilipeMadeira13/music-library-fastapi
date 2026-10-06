@@ -29,5 +29,5 @@ async def register_album(
     except AlbumArtistNotFoundError as exc:
         raise HTTPException(
             status_code=422,
-            detail="O artista informado não existe.",
+            detail="The informed artist does not exist.",
         ) from exc

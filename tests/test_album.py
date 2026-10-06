@@ -113,7 +113,7 @@ def test_api_returns_422_when_creating_album_for_missing_artist(client, database
         rows = connection.execute("SELECT * FROM albums").fetchall()
 
     assert response.status_code == 422
-    assert response.json() == {"detail": "O artista informado não existe."}
+    assert response.json() == {"detail": "The informed artist does not exist."}
     assert rows == []
 
 

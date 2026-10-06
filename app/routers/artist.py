@@ -24,7 +24,7 @@ async def search_artist(
 ):
     artist = await artist_repository.search_artist(artist_id)
     if not artist:
-        raise HTTPException(status_code=404, detail="Artista não encontrado!")
+        raise HTTPException(status_code=404, detail="Artist not found!")
     return artist
 
 
@@ -46,7 +46,7 @@ async def update_artist(
         artist_id=artist_id, artist=artist
     )
     if not updated_artist:
-        raise HTTPException(status_code=404, detail="Artista não encontrado!")
+        raise HTTPException(status_code=404, detail="Artist not found!")
     return updated_artist
 
 
@@ -60,10 +60,10 @@ async def delete_artist(
     except ArtistHasAlbumsError as exc:
         raise HTTPException(
             status_code=409,
-            detail="Este artista possui álbuns vinculados.",
+            detail="This artist has linked albums.",
         ) from exc
     if not success:
         raise HTTPException(
             status_code=404,
-            detail="Artista não encontrado!",
+            detail="Artist not found!",
         )

@@ -10,7 +10,7 @@ class AlbumRepository:
     def __init__(self, database: LocalDatabase):
         self.db = database
 
-    async def list_albums(self):
+    async def list_albums(self) -> list[Album]:
         with self.db.connect() as connection:
             cursor = connection.cursor()
             cursor.execute("""

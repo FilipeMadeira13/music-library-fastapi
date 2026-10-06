@@ -24,4 +24,4 @@ class ArtistCreateUpdate(BaseModel):
     formation_year: Optional[int] = None
 
     _validate_name = field_validator("name")(validate_name)
-    validate_formation_year = field_validator("formation_year")(validate_year)
+    _validate_formation_year = field_validator("formation_year")(validate_year)

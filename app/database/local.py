@@ -47,4 +47,4 @@ class LocalDatabase:
             )
         """)
 
-        print("Banco de dados inicializado")
+        print("Database initialized")

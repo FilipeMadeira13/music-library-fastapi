@@ -99,7 +99,7 @@ def test_api_lists_all_artists_with_basic_data(client, database):
         },
         {
             "id": 30,
-            "name": "Artista independente",
+            "name": "Independent artist",
             "country": None,
             "formation_year": None,
         },
@@ -199,7 +199,7 @@ def test_api_returns_404_when_artist_not_found(client):
     response = client.get("/api/artists/999")
 
     assert response.status_code == 404
-    assert response.json() == {"detail": "Artista não encontrado!"}
+    assert response.json() == {"detail": "Artist not found!"}
 
 
 def test_api_updates_existing_artist(client, database):
@@ -243,7 +243,7 @@ def test_api_returns_404_when_updating_missing_artist(client, database):
         rows = connection.execute("SELECT * FROM artists").fetchall()
 
     assert response.status_code == 404
-    assert response.json() == {"detail": "Artista não encontrado!"}
+    assert response.json() == {"detail": "Artist not found!"}
     assert rows == []
 
 
@@ -298,5 +298,5 @@ def test_api_returns_404_when_deleting_missing_artist(client, database):
         rows = connection.execute("SELECT * FROM artists").fetchall()
 
     assert response.status_code == 404
-    assert response.json() == {"detail": "Artista não encontrado!"}
+    assert response.json() == {"detail": "Artist not found!"}
     assert rows == []
