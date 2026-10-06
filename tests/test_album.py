@@ -176,26 +176,56 @@ def test_api_rejects_future_release_year_without_saving_album(client, database):
 
 
 def test_api_gets_album_by_id(client, database):
-    artist_id = seed_artist(database, name="Rush")
-    album_id = seed_album(
+    rush_id = seed_artist(database, artist_id=10, name="Rush")
+    queen_id = seed_artist(database, artist_id=20, name="Queen")
+    seed_album(
         database,
+        album_id=1,
+        title="A Farewell to Kings",
+        artist_id=rush_id,
+        release_year=1977,
+        genre="Progressive rock",
+        number_of_tracks=6,
+    )
+    requested_album_id = seed_album(
+        database,
+        album_id=2,
         title="2112",
-        artist_id=artist_id,
+        artist_id=rush_id,
         release_year=1976,
         genre="Progressive rock",
         number_of_tracks=6,
     )
+    seed_album(
+        database,
+        album_id=3,
+        title="A Night at the Opera",
+        artist_id=queen_id,
+        release_year=1975,
+        genre="Rock",
+        number_of_tracks=12,
+    )
 
-    response = client.get(f"/api/albums/{album_id}")
+    response = client.get(f"/api/albums/{requested_album_id}")
 
     assert response.status_code == 200
     body = response.json()
-    assert body["id"] == album_id
-    assert body["title"] == "2112"
-    assert body["artist_id"] == artist_id
-    assert body["artist_name"] == "Rush"
-    assert body["release_year"] == 1976
-    assert body["genre"] == "Progressive rock"
-    assert body["number_of_tracks"] == 6
+    assert {
+        "id": body["id"],
+        "title": body["title"],
+        "artist_id": body["artist_id"],
+        "artist_name": body["artist_name"],
+        "release_year": body["release_year"],
+        "genre": body["genre"],
+        "number_of_tracks": body["number_of_tracks"],
+    } == {
+        "id": requested_album_id,
+        "title": "2112",
+        "artist_id": rush_id,
+        "artist_name": "Rush",
+        "release_year": 1976,
+        "genre": "Progressive rock",
+        "number_of_tracks": 6,
+    }
     assert body["created_at"]
     assert body["updated_at"]
