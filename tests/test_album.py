@@ -236,3 +236,17 @@ def test_api_returns_404_when_album_not_found(client):
 
     assert response.status_code == 404
     assert response.json() == {"detail": "Album not found!"}
+
+
+def test_api_search_album_preserves_null_fields(client, database):
+    artist_id = seed_artist(database, name="Rush")
+    album_id = seed_album(database, title="Demo", artist_id=artist_id)
+
+    response = client.get(f"/api/albums/{album_id}")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["id"] == album_id
+    assert body["release_year"] is None
+    assert body["genre"] is None
+    assert body["number_of_tracks"] is None
