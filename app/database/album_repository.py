@@ -38,6 +38,35 @@ class AlbumRepository:
             ]
             return albums
 
+    async def search_album(self, album_id: str) -> Optional[Album]:
+        with self.db.connect() as connection:
+            cursor = connection.cursor()
+            cursor.execute(
+                """
+                    SELECT
+                        a.id, a.title, a.artist_id, ar.name AS artist_name,
+                        a.release_year,
+                        a.genre, a.number_of_tracks, a.created_at, a.updated_at
+                    FROM albums AS a
+                    JOIN artists AS ar ON ar.id = a.artist_id WHERE a.id = ?
+                """,
+                (album_id,),
+            )
+            line = cursor.fetchone()
+            if line:
+                return Album(
+                    id=line[0],
+                    title=line[1],
+                    artist_id=line[2],
+                    artist_name=line[3],
+                    release_year=line[4],
+                    genre=line[5],
+                    number_of_tracks=line[6],
+                    created_at=line[7],
+                    updated_at=line[8],
+                )
+            return None
+
     async def register_album(self, album: AlbumCreateUpdate) -> Optional[Album]:
         try:
             with self.db.connect() as connection:
