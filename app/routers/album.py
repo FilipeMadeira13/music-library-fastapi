@@ -68,3 +68,15 @@ async def update_album(
     if not updated_album:
         raise HTTPException(status_code=404, detail="Album not found!")
     return updated_album
+
+@router.delete('/{album_id}', status_code=204, tags=['Album'])
+async def delete_album(
+    album_repository: Annotated[AlbumRepository, Depends(get_album_repository)],
+    album_id: int
+):
+    success = await album_repository.delete_album(album_id)
+    if not success:
+        raise HTTPException(
+            status_code=404,
+            detail="Album not found!"
+        )

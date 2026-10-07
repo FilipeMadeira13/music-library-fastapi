@@ -154,3 +154,9 @@ class AlbumRepository:
             if exc.sqlite_errorcode == sqlite3.SQLITE_CONSTRAINT_FOREIGNKEY:
                 raise AlbumArtistNotFoundError(album.artist_id) from exc
             raise
+
+    async def delete_album(self, album_id: int) -> bool:
+        with self.db.connect() as connection:
+            cursor = connection.cursor()
+            cursor.execute('DELETE FROM albums WHERE id = ?', (album_id,))
+            return cursor.rowcount > 0
