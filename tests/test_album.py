@@ -343,3 +343,15 @@ def test_api_deletes_existing_album(client, database):
     with database.connect() as connection:
         rows = connection.execute("SELECT id FROM albums").fetchall()
     assert rows == [(remaining_album_id,)]
+
+
+def test_api_returns_404_when_deleting_missing_album(client, database):
+    artist_id = seed_artist(database)
+    album_id = seed_album(database, artist_id=artist_id)
+    response = client.delete("/api/albums/999")
+    with database.connect() as connection:
+        rows = connection.execute("SELECT id FROM albums").fetchall()
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Album not found!"}
+    assert rows == [(album_id,)]
