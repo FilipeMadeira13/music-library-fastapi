@@ -29,7 +29,7 @@ async def search_album(
         Depends(get_album_repository),
     ],
     album_id: str,
-):
+) -> Album:
     album = await album_repository.search_album(album_id)
     if not album:
         raise HTTPException(status_code=404, detail="Album not found!")
@@ -55,7 +55,7 @@ async def update_album(
     album_repository: Annotated[AlbumRepository, Depends(get_album_repository)],
     album: AlbumCreateUpdate,
     album_id: int,
-):
+) -> Album:
     try:
         updated_album = await album_repository.update_album(
             album_id=album_id, album=album
@@ -69,14 +69,12 @@ async def update_album(
         raise HTTPException(status_code=404, detail="Album not found!")
     return updated_album
 
-@router.delete('/{album_id}', status_code=204, tags=['Album'])
+
+@router.delete("/{album_id}", status_code=204, tags=["Album"])
 async def delete_album(
     album_repository: Annotated[AlbumRepository, Depends(get_album_repository)],
-    album_id: int
-):
+    album_id: int,
+) -> None:
     success = await album_repository.delete_album(album_id)
     if not success:
-        raise HTTPException(
-            status_code=404,
-            detail="Album not found!"
-        )
+        raise HTTPException(status_code=404, detail="Album not found!")

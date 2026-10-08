@@ -158,5 +158,5 @@ class AlbumRepository:
     async def delete_album(self, album_id: int) -> bool:
         with self.db.connect() as connection:
             cursor = connection.cursor()
-            cursor.execute('DELETE FROM albums WHERE id = ?', (album_id,))
+            cursor.execute("DELETE FROM albums WHERE id = ?", (album_id,))
             return cursor.rowcount > 0
