@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 
@@ -14,9 +14,26 @@ router = APIRouter(prefix="/api/albums")
 
 @router.get("/", response_model=list[Album], tags=["Album"])
 async def list_albums(
-    album_repository: Annotated[AlbumRepository, Depends(get_album_repository)],
+    album_repository: Annotated[
+        AlbumRepository,
+        Depends(get_album_repository),
+    ],
 ):
     return await album_repository.list_albums()
+
+
+@router.get("/{album_id}", response_model=Optional[Album], tags=["Album"])
+async def search_album(
+    album_repository: Annotated[
+        AlbumRepository,
+        Depends(get_album_repository),
+    ],
+    album_id: str,
+) -> Album:
+    album = await album_repository.search_album(album_id)
+    if not album:
+        raise HTTPException(status_code=404, detail="Album not found!")
+    return album
 
 
 @router.post("/", response_model=Album, status_code=201, tags=["Album"])
@@ -31,3 +48,33 @@ async def register_album(
             status_code=422,
             detail="The informed artist does not exist.",
         ) from exc
+
+
+@router.put("/{album_id}", response_model=Optional[Album], tags=["Album"])
+async def update_album(
+    album_repository: Annotated[AlbumRepository, Depends(get_album_repository)],
+    album: AlbumCreateUpdate,
+    album_id: int,
+) -> Album:
+    try:
+        updated_album = await album_repository.update_album(
+            album_id=album_id, album=album
+        )
+    except AlbumArtistNotFoundError as exc:
+        raise HTTPException(
+            status_code=422,
+            detail="The informed artist does not exist.",
+        ) from exc
+    if not updated_album:
+        raise HTTPException(status_code=404, detail="Album not found!")
+    return updated_album
+
+
+@router.delete("/{album_id}", status_code=204, tags=["Album"])
+async def delete_album(
+    album_repository: Annotated[AlbumRepository, Depends(get_album_repository)],
+    album_id: int,
+) -> None:
+    success = await album_repository.delete_album(album_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Album not found!")

@@ -86,7 +86,7 @@ class ArtistRepository:
                     artist.name,
                     artist.country,
                     artist.formation_year,
-                    datetime.now(timezone.utc),
+                    datetime.now(timezone.utc).isoformat(),
                     artist_id,
                 ),
             )

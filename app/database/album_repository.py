@@ -1,4 +1,5 @@
 import sqlite3
+from datetime import datetime, timezone
 from typing import Optional
 
 from app.database.local import LocalDatabase
@@ -38,6 +39,35 @@ class AlbumRepository:
             ]
             return albums
 
+    async def search_album(self, album_id: str) -> Optional[Album]:
+        with self.db.connect() as connection:
+            cursor = connection.cursor()
+            cursor.execute(
+                """
+                    SELECT
+                        a.id, a.title, a.artist_id, ar.name AS artist_name,
+                        a.release_year,
+                        a.genre, a.number_of_tracks, a.created_at, a.updated_at
+                    FROM albums AS a
+                    JOIN artists AS ar ON ar.id = a.artist_id WHERE a.id = ?
+                """,
+                (album_id,),
+            )
+            line = cursor.fetchone()
+            if line:
+                return Album(
+                    id=line[0],
+                    title=line[1],
+                    artist_id=line[2],
+                    artist_name=line[3],
+                    release_year=line[4],
+                    genre=line[5],
+                    number_of_tracks=line[6],
+                    created_at=line[7],
+                    updated_at=line[8],
+                )
+            return None
+
     async def register_album(self, album: AlbumCreateUpdate) -> Optional[Album]:
         try:
             with self.db.connect() as connection:
@@ -73,3 +103,60 @@ class AlbumRepository:
             if exc.sqlite_errorcode == sqlite3.SQLITE_CONSTRAINT_FOREIGNKEY:
                 raise AlbumArtistNotFoundError(album.artist_id) from exc
             raise
+
+    async def update_album(
+        self, album_id: int, album: AlbumCreateUpdate
+    ) -> Optional[Album]:
+        try:
+            with self.db.connect() as connection:
+                cursor = connection.cursor()
+                cursor.execute(
+                    """
+                    UPDATE albums
+                    SET title = ?, artist_id = ?, release_year = ?, genre = ?,
+                        number_of_tracks = ?, updated_at = ?
+                    WHERE id = ?
+                    """,
+                    (
+                        album.title,
+                        album.artist_id,
+                        album.release_year,
+                        album.genre,
+                        album.number_of_tracks,
+                        datetime.now(timezone.utc).isoformat(),
+                        album_id,
+                    ),
+                )
+                if cursor.rowcount == 0:
+                    return None
+                cursor.execute(
+                    """
+                    SELECT ar.name, a.created_at, a.updated_at
+                    FROM albums AS a
+                    JOIN artists AS ar ON ar.id = a.artist_id
+                    WHERE a.id = ?
+                    """,
+                    (album_id,),
+                )
+                line = cursor.fetchone()
+                return Album(
+                    id=album_id,
+                    title=album.title,
+                    artist_id=album.artist_id,
+                    artist_name=line[0],
+                    release_year=album.release_year,
+                    genre=album.genre,
+                    number_of_tracks=album.number_of_tracks,
+                    created_at=line[1],
+                    updated_at=line[2],
+                )
+        except sqlite3.IntegrityError as exc:
+            if exc.sqlite_errorcode == sqlite3.SQLITE_CONSTRAINT_FOREIGNKEY:
+                raise AlbumArtistNotFoundError(album.artist_id) from exc
+            raise
+
+    async def delete_album(self, album_id: int) -> bool:
+        with self.db.connect() as connection:
+            cursor = connection.cursor()
+            cursor.execute("DELETE FROM albums WHERE id = ?", (album_id,))
+            return cursor.rowcount > 0

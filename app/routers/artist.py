@@ -21,7 +21,7 @@ async def list_artists(
 async def search_artist(
     artist_repository: Annotated[ArtistRepository, Depends(get_artist_repository)],
     artist_id: int,
-):
+) -> Artist:
     artist = await artist_repository.search_artist(artist_id)
     if not artist:
         raise HTTPException(status_code=404, detail="Artist not found!")
@@ -41,7 +41,7 @@ async def update_artist(
     artist_repository: Annotated[ArtistRepository, Depends(get_artist_repository)],
     artist_id: int,
     artist: ArtistCreateUpdate,
-):
+) -> Artist:
     updated_artist = await artist_repository.update_artist(
         artist_id=artist_id, artist=artist
     )
@@ -54,7 +54,7 @@ async def update_artist(
 async def delete_artist(
     artist_repository: Annotated[ArtistRepository, Depends(get_artist_repository)],
     artist_id: int,
-):
+) -> None:
     try:
         success = await artist_repository.delete_artist(artist_id)
     except ArtistHasAlbumsError as exc:
