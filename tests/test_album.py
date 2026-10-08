@@ -321,3 +321,25 @@ def test_api_update_clears_optional_fields(client, database):
     assert body["genre"] is None
     assert body["number_of_tracks"] is None
     assert client.get(f"/api/albums/{album_id}").json() == body
+
+
+def test_api_deletes_existing_album(client, database):
+    artist_id = seed_artist(database)
+    album_id = seed_album(database, artist_id=artist_id)
+    remaining_album_id = seed_album(
+        database,
+        title="Signals",
+        artist_id=artist_id,
+    )
+
+    response = client.delete(f"/api/albums/{album_id}")
+
+    assert response.status_code == 204
+    assert response.content == b""
+
+    follow_up = client.get(f"/api/albums/{album_id}")
+    assert follow_up.status_code == 404
+
+    with database.connect() as connection:
+        rows = connection.execute("SELECT id FROM albums").fetchall()
+    assert rows == [(remaining_album_id,)]
